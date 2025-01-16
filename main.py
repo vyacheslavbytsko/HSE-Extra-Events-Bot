@@ -86,17 +86,19 @@ class RegistrationMiddleware(BaseMiddleware):
                 else:
                     await bot.send_message(data["event_context"].chat.id, "Вы не зарегистрированы в системе. /register")
             else:
-                if not event.message.text.startswith("/register"):
-                    data["db_user"] = db_user
-                    result = await handler(event, data)
-                    return result
-                else:
-                    await bot.send_message(data["event_context"].chat.id, "Вы уже зарегистрированы в системе. /start")
+                data["db_user"] = db_user
+                result = await handler(event, data)
+                return result
 
 
 
 @dp.message(Command("register"))
 async def command_register_handler(message: Message, state: FSMContext):
+    async with async_session() as session:
+        db_user = session.get(DBUser, message.from_user.id)
+        if db_user is not None:
+            await message.answer("Вы уже зарегистрированы в системе. /start")
+            return
     await message.answer(f"Здравствуйте! Давайте зарегистрируемся.\n\nНапишите своё имя.")
     await state.set_state(RegistrationStates.full_name)
 
