@@ -95,7 +95,7 @@ class RegistrationMiddleware(BaseMiddleware):
 @dp.message(Command("register"))
 async def command_register_handler(message: Message, state: FSMContext):
     async with async_session() as session:
-        db_user = session.get(DBUser, message.from_user.id)
+        db_user = await session.get(DBUser, message.from_user.id)
         if db_user is not None:
             await message.answer("Вы уже зарегистрированы в системе. /start")
             return
